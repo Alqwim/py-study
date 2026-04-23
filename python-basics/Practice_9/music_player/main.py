@@ -8,26 +8,38 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 pygame.init()
 
-WIDTH, HEIGHT = 600, 400
+WIDTH, HEIGHT = 600, 450 # Немного увеличил высоту для прогресс-бара
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mickey's Music Player")
 
+# Цвета
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 180, 0)
+GRAY = (200, 200, 200)
 
 font = pygame.font.SysFont("Arial", 22)
 title_font = pygame.font.SysFont("Arial", 28, bold=True)
 
-# Загружаем плеер
 player = MusicPlayer("music")
 
 def draw_text(text, font, color, x, y):
     img = font.render(text, True, color)
     screen.blit(img, (x, y))
 
+def draw_progress_bar(x, y, w, h, progress_percent):
+    """Рисует полосу прогресса"""
+    # Рамка (фон)
+    pygame.draw.rect(screen, GRAY, (x, y, w, h))
+    # Заполнение (прогресс)
+    pygame.draw.rect(screen, GREEN, (x, y, w * progress_percent, h))
+    # Контур
+    pygame.draw.rect(screen, BLACK, (x, y, w, h), 2)
+
 def main():
     running = True
+    clock = pygame.time.Clock()
+
     while running:
         screen.fill(WHITE)
         
@@ -40,7 +52,16 @@ def main():
         # Инфо о треке
         status_text = "STATUS: PLAYING" if player.is_playing else "STATUS: STOPPED"
         draw_text(status_text, font, GREEN if player.is_playing else BLACK, 50, 280)
-        draw_text(f"NOW: {player.get_current_track_name()}", font, BLACK, 50, 320)
+        draw_text(f"NOW: {player.get_current_track_name()}", font, BLACK, 50, 310)
+
+        # РАБОТА С ПРОГРЕССОМ
+        curr, total, percent = player.get_progress()
+        draw_progress_bar(50, 360, 500, 20, percent)
+        
+        # Таймер текстом (например, 01:23 / 03:45)
+        if total > 0:
+            time_str = f"{int(curr)//60:02}:{int(curr)%60:02} / {int(total)//60:02}:{int(total)%60:02}"
+            draw_text(time_str, font, BLACK, 50, 390)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -53,6 +74,7 @@ def main():
                 if event.key == pygame.K_q: running = False
 
         pygame.display.flip()
+        clock.tick(30) # Ограничиваем FPS для экономии ресурсов
 
     pygame.quit()
     sys.exit()
