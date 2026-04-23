@@ -81,7 +81,7 @@ while True:
             if event.key == pygame.K_e: current_tool = "eraser"
             if event.key == pygame.K_s: current_tool = "square"
             if event.key == pygame.K_t: current_tool = "right_tri"
-            if event.key == pygame.K_g: current_tool = "equ_tri"
+            if event.key == pygame.K_g: current_tool = "equ_trii"
             if event.key == pygame.K_b: current_tool = "rhombus"
 
         if event.type == pygame.MOUSEBUTTONDOWN:
