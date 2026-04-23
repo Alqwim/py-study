@@ -1,171 +1,130 @@
-import pygame, sys
-from pygame.locals import *
-import random, time
-import os
+import pygame
+import sys
+import random
 
-# --- АВТОМАТИЧЕСКАЯ НАСТРОЙКА ПАПКИ ---
-# Этот блок заставляет скрипт искать файлы в той папке, где он сам находится
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
-
-# --- ИНИЦИАЛИЗАЦИЯ ---
+# Инициализация
 pygame.init()
 
-# Основные параметры
+# Константы
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 600
-SPEED = 5
-SCORE = 0
-COIN_SCORE = 0
 FPS = 60
+SPEED = 5  # Фиксированная скорость
 
-# Цвета
+# Цвета (RGB)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-YELLOW = (255, 223, 0)
-RED = (255, 0, 0)
+RED = (255, 0, 0)      # Враг
+GREEN = (0, 255, 0)    # Игрок
+YELLOW = (255, 255, 0) # Монета
+GRAY = (50, 50, 50)    # Дорога
 
 # Настройка экрана
-DISPLAYSURFACE = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Racer: Ultra 1000000% Edition")
-FramePerSec = pygame.time.Clock()
-
-# Шрифты
-font_small = pygame.font.SysFont("Verdana", 20)
-font_big = pygame.font.SysFont("Verdana", 60)
-
-# --- ФУНКЦИЯ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ ---
-def load_img(name, scale=None):
-    path = os.path.join("img", name)
-    try:
-        image = pygame.image.load(path).convert_alpha()
-        if scale:
-            image = pygame.transform.scale(image, scale)
-        return image
-    except:
-        # Если картинка не найдена, создаем цветной квадрат, чтобы игра не вылетала
-        print(f"Внимание: Файл {name} не найден в папке img/")
-        surf = pygame.Surface(scale if scale else (50, 50))
-        surf.fill((255, 0, 255)) # Розовый цвет ошибки
-        return surf
-
-# Предзагрузка фона
-bg_image = load_img("background.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
-bg_y = 0
-
-# --- КЛАССЫ ---
-
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__() 
-        self.image = load_img("Enemy.png", (50, 90))
-        self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40, SCREEN_WIDTH-40), -100)
-
-    def move(self):
-        global SCORE
-        self.rect.move_ip(0, SPEED)
-        if (self.rect.top > SCREEN_HEIGHT):
-            SCORE += 1
-            self.rect.top = -100
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Primitive Racer")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Verdana", 20)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__() 
-        self.image = load_img("Player.png", (50, 90))
+        super().__init__()
+        self.image = pygame.Surface((40, 60))
+        self.image.fill(GREEN)
         self.rect = self.image.get_rect()
-        self.rect.center = (160, 520)
-       
-    def move(self):
-        pressed_keys = pygame.key.get_pressed()
-        if self.rect.left > 0:
-            if pressed_keys[K_LEFT]:
-                self.rect.move_ip(-7, 0)
-        if self.rect.right < SCREEN_WIDTH:        
-            if pressed_keys[K_RIGHT]:
-                self.rect.move_ip(7, 0)
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 70)
 
-class Coin(pygame.sprite.Sprite):
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and self.rect.left > 0:
+            self.rect.move_ip(-5, 0)
+        if keys[pygame.K_RIGHT] and self.rect.right < SCREEN_WIDTH:
+            self.rect.move_ip(5, 0)
+
+class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_img("coin.png", (35, 35))
+        self.image = pygame.Surface((40, 60))
+        self.image.fill(RED)
         self.rect = self.image.get_rect()
-        self.spawn()
+        self.reset()
 
-    def spawn(self):
-        self.rect.center = (random.randint(30, SCREEN_WIDTH - 30), -50)
+    def reset(self):
+        self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), -50)
 
     def move(self):
         self.rect.move_ip(0, SPEED)
         if self.rect.top > SCREEN_HEIGHT:
-            self.spawn()
+            self.reset()
 
-# --- СОЗДАНИЕ ОБЪЕКТОВ ---
-P1 = Player()
-E1 = Enemy()
-C1 = Coin()
+class Coin(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((25, 25))
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.reset()
 
-# Группировка спрайтов
+    def reset(self):
+        self.rect.center = (random.randint(20, SCREEN_WIDTH - 20), -50)
+
+    def move(self):
+        self.rect.move_ip(0, SPEED)
+        if self.rect.top > SCREEN_HEIGHT:
+            self.reset()
+
+# Создание объектов
+player = Player()
+enemy = Enemy()
+coin = Coin()
+
+# Группы спрайтов
 enemies = pygame.sprite.Group()
-enemies.add(E1)
+enemies.add(enemy)
 
 coins = pygame.sprite.Group()
-coins.add(C1)
+coins.add(coin)
 
 all_sprites = pygame.sprite.Group()
-all_sprites.add(P1)
-all_sprites.add(E1)
-all_sprites.add(C1)
+all_sprites.add(player)
+all_sprites.add(enemy)
+all_sprites.add(coin)
 
-# Событие увеличения скорости
-INC_SPEED = pygame.USEREVENT + 1
-pygame.time.set_timer(INC_SPEED, 1000)
+# Игровые переменные
+collected_coins = 0
 
-# --- ИГРОВОЙ ЦИКЛ ---
+# Главный цикл
 while True:
     for event in pygame.event.get():
-        if event.type == INC_SPEED:
-            SPEED += 0.2
-        if event.type == QUIT:
+        if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    # 1. Анимированный фон (бесконечная дорога)
-    DISPLAYSURFACE.blit(bg_image, (0, bg_y))
-    DISPLAYSURFACE.blit(bg_image, (0, bg_y - SCREEN_HEIGHT))
-    bg_y += SPEED
-    if bg_y >= SCREEN_HEIGHT:
-        bg_y = 0
+    # Логика движения
+    player.move()
+    enemy.move()
+    coin.move()
 
-    # 2. Отрисовка UI
-    score_txt = font_small.render(f"Score: {SCORE}", True, BLACK)
-    coins_txt = font_small.render(f"Coins: {COIN_SCORE}", True, BLACK)
-    DISPLAYSURFACE.blit(score_txt, (10, 10))
-    DISPLAYSURFACE.blit(coins_txt, (SCREEN_WIDTH - 110, 10))
+    # Проверка столкновения с монетой
+    if pygame.sprite.spritecollideany(player, coins):
+        collected_coins += 1
+        coin.reset()
 
-    # 3. Движение и отрисовка всех сущностей
-    for entity in all_sprites:
-        DISPLAYSURFACE.blit(entity.image, entity.rect)
-        entity.move()
-
-    # 4. Сбор монет
-    if pygame.sprite.spritecollideany(P1, coins):
-        COIN_SCORE += 1
-        C1.spawn() # Монетка мгновенно прыгает наверх
-
-    # 5. Столкновение с врагом
-    if pygame.sprite.spritecollideany(P1, enemies):
-        time.sleep(0.5)
-        DISPLAYSURFACE.fill(RED)
-        msg = font_big.render("GAME OVER", True, WHITE)
-        DISPLAYSURFACE.blit(msg, (30, 250))
-        res = font_small.render(f"Total Coins: {COIN_SCORE}", True, WHITE)
-        DISPLAYSURFACE.blit(res, (130, 350))
-        pygame.display.update()
-        time.sleep(2)
+    # Проверка столкновения с врагом
+    if pygame.sprite.spritecollideany(player, enemies):
+        print(f"Game Over! Монет собрано: {collected_coins}")
         pygame.quit()
         sys.exit()
 
+    # Отрисовка
+    screen.fill(GRAY) # Фон-дорога
+    
+    # Рисуем все объекты
+    for sprite in all_sprites:
+        screen.blit(sprite.image, sprite.rect)
+
+    # Отображение счетчика монет
+    score_text = font.render(f"Coins: {collected_coins}", True, WHITE)
+    screen.blit(score_text, (SCREEN_WIDTH - 110, 20))
+
     pygame.display.update()
-    FramePerSec.tick(FPS)
+    clock.tick(FPS)
