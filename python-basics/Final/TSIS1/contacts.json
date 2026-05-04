@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Sahab-Ali",
+        "email": "sahab@example.com",
+        "birthday": "1995-05-20",
+        "group_name": "Friend",
+        "phones": "+77001112233 (mobile)"
+    },
+    {
+        "name": "Ayaulym",
+        "email": "aya@example.com",
+        "birthday": "2008-11-30",
+        "group_name": "Family",
+        "phones": "+77004445566 (mobile)"
+    },
+    {
+        "name": "Brother",
+        "email": "ddd@gmail.com",
+        "birthday": "2010-02-15",
+        "group_name": "Family",
+        "phones": "+77007778899 (mobile)"
+    }
+]
