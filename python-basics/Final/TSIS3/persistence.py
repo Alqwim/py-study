@@ -1,30 +1,35 @@
 import json
 import os
 
-def load_json(filename, default):
-    if not os.path.exists(filename) or os.stat(filename).st_size == 0:
-        with open(filename, 'w') as f:
-            json.dump(default, f)
-        return default
-    with open(filename, 'r') as f:
-        try:
-            return json.load(f)
-        except:
-            return default
+# Пути к файлам данных
+SCORE_FILE = "leaderboard.json"
+SETTINGS_FILE = "settings.json"
 
 def get_leaderboard():
-    return load_json('leaderboard.json', [])
+    """Загружает список лучших игроков из JSON-файла."""
+    if not os.path.exists(SCORE_FILE):
+        return []
+    with open(SCORE_FILE, "r") as f:
+        # Читаем и сортируем по убыванию очков
+        data = json.load(f)
+        return sorted(data, key=lambda x: x['score'], reverse=True)
 
 def save_score(name, score, distance):
-    lb = get_leaderboard()
-    lb.append({"name": name, "score": int(score), "distance": int(distance)})
-    lb = sorted(lb, key=lambda x: x['score'], reverse=True)[:10]
-    with open('leaderboard.json', 'w') as f:
-        json.dump(lb, f, indent=4)
+    """Сохраняет новый результат в таблицу лидеров."""
+    data = get_leaderboard()
+    data.append({"name": name, "score": score, "distance": int(distance)})
+    with open(SCORE_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def get_settings():
-    return load_json('settings.json', {"sound": True, "color": "Red", "difficulty": "Medium"})
+    """Загружает настройки (звук, цвет, сложность) или создает стандартные."""
+    default = {"sound": True, "color": "Red", "difficulty": "Medium"}
+    if not os.path.exists(SETTINGS_FILE):
+        return default
+    with open(SETTINGS_FILE, "r") as f:
+        return json.load(f)
 
 def save_settings(settings):
-    with open('settings.json', 'w') as f:
+    """Записывает текущие настройки в JSON-файл."""
+    with open(SETTINGS_FILE, "w") as f:
         json.dump(settings, f, indent=4)

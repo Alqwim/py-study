@@ -26,6 +26,11 @@
     },
     {
         "name": "Player1",
+        "score": 1471,
+        "distance": 671
+    },
+    {
+        "name": "Player1",
         "score": 1449,
         "distance": 1449
     },
@@ -48,5 +53,25 @@
         "name": "\u0432\u0432",
         "score": 979,
         "distance": 679
+    },
+    {
+        "name": "Player1",
+        "score": 858,
+        "distance": 358
+    },
+    {
+        "name": "Player1",
+        "score": 671,
+        "distance": 571
+    },
+    {
+        "name": "Player1",
+        "score": 403,
+        "distance": 203
+    },
+    {
+        "name": "Player1",
+        "score": 2528,
+        "distance": 1228
     }
 ]
